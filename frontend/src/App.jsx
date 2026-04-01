@@ -11,6 +11,7 @@ import { UploadComponent } from './pages/Upload'
 import { Box, CircularProgress } from '@mui/material'
 import { useEffect } from 'react'
 import { validateToken } from './store/slices/authSlice'
+import { SocketProvider } from './context/SocketContext'
 import { useDispatch } from 'react-redux'
 
 function App() {
@@ -56,20 +57,22 @@ const dispatch = useDispatch()
   }
 
   return (
-    <Routes>
-      <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} />
-      <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/dashboard" />} />
-      
-      <Route path="/" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}>
-        <Route index element={<Navigate to="/dashboard" />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="videos" element={<VideoLibrary />} />
-        <Route path="videos/:id" element={<VideoPlayer />} />
-        <Route path="upload" element={<UploadComponent />} />
-      </Route>
-      
-      <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
-    </Routes>
+    <SocketProvider>
+      <Routes>
+        <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} />
+        <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/dashboard" />} />
+        
+        <Route path="/" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}>
+          <Route index element={<Navigate to="/dashboard" />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="videos" element={<VideoLibrary />} />
+          <Route path="videos/:id" element={<VideoPlayer />} />
+          <Route path="upload" element={<UploadComponent />} />
+        </Route>
+        
+        <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
+      </Routes>
+    </SocketProvider>
   )
 }
 

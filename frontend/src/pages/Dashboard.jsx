@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useVideos } from '../hooks/useRedux'
+import { useSocket } from '../context/SocketContext'
 import { 
   Video, 
   Upload, 
@@ -26,6 +27,7 @@ import {
 
 export const Dashboard = () => {
   const { stats, loading, getDashboardStats } = useVideos()
+  const { processingVideos, clearProcessingVideo } = useSocket()
 console.log("stats----------", stats);
 
   useEffect(() => {
