@@ -40,9 +40,9 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "blob:"],
-      mediaSrc: ["'self'", "blob:"],
-      connectSrc: ["'self'", "http://localhost:3000", "http://localhost:5000",  "https://video-streaming-app-pi-three.vercel.app", "https://video-streaming-app-ud5i.onrender.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https:", "https://res.cloudinary.com"],
+      mediaSrc: ["'self'", "blob:", "https:", "https://res.cloudinary.com", "https://video-cloudinary.com"],
+      connectSrc: ["'self'", "http://localhost:3000", "http://localhost:5000",  "https://video-streaming-app-pi-three.vercel.app", "https://video-streaming-app-ud5i.onrender.com", "https://api.cloudinary.com"],
     },
   },
 }));
@@ -65,26 +65,24 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Set Cross-Origin-Resource-Policy for video files
+// Add CORS headers for Cloudinary resources
 app.use((req, res, next) => {
-  if (req.path.startsWith('/uploads/videos')) {
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  // Allow Cloudinary resources
+  if (req.path.includes('/api/videos/') || req.path.includes('/uploads/')) {
+    res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.header('Cross-Origin-Embedder-Policy', 'unsafe-none');
+    res.header('Cross-Origin-Opener-Policy', 'unsafe-none');
   }
+  
   next();
 });
-
-// Static files for uploads
-app.use('/uploads', express.static('uploads', {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.mp4') || path.endsWith('.mov') || path.endsWith('.avi')) {
-      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-      res.setHeader('Content-Type', 'video/mp4');
-    }
-  }
-}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Routes
 app.use('/api/auth', authRoutes);

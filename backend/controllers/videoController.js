@@ -3,6 +3,7 @@ const path = require('path');
 const { validationResult } = require('express-validator');
 const Video = require('../models/Video');
 const VideoProcessor = require('../services/videoProcessor');
+const { generateThumbnail, deleteVideo } = require('../config/cloudinary');
 
 const uploadVideo = async (req, res) => {
   try {
@@ -25,16 +26,25 @@ const uploadVideo = async (req, res) => {
     const { title } = req.body;
     const ably = req.app.get('ably');
 
-    // Create video record
+    // Debug: Log the multer-storage-cloudinary response
+    console.log('Multer file object:', req.file);
+    console.log('File path:', req.file.path);
+    console.log('File filename:', req.file.filename);
+    console.log('File public_id:', req.file.public_id);
+
+    // Create video record with Cloudinary URL
     const video = await Video.create({
       title: title || req.file.originalname,
-      filePath: req.file.path,
+      filePath: req.file.path, // Cloudinary URL
       size: req.file.size,
       originalName: req.file.originalname,
       mimeType: req.file.mimetype,
       uploadedBy: req.user._id,
-      status: 'processing'
+      status: 'processing',
+      publicId: req.file.public_id // Cloudinary public_id for deletion
     });
+
+    console.log('Created video record:', video);
 
     // Start async processing
     processVideoAsync(video, req.user._id, ably);
@@ -48,8 +58,8 @@ const uploadVideo = async (req, res) => {
     console.error('Upload error:', error);
     
     // Clean up uploaded file if error occurs
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
+    if (req.file && req.file.filename) {
+      await deleteVideo(req.file.filename);
     }
     
     res.status(500).json({
@@ -61,20 +71,31 @@ const uploadVideo = async (req, res) => {
 
 const processVideoAsync = async (video, userId, ably) => {
   try {
+    console.log('Processing video:', video._id, 'publicId:', video.publicId);
+    
     const processor = new VideoProcessor(ably, video._id.toString(), userId);
+    
+    // Generate thumbnail using Cloudinary
+    const thumbnailUrl = await generateThumbnail(video.publicId, video._id.toString());
+    
+    console.log('Generated thumbnail URL:', thumbnailUrl);
+    
+    // Process video (duration, sensitivity analysis)
     const result = await processor.processVideo(video.filePath, video.filePath);
 
     // Update video with processing results
     await Video.findByIdAndUpdate(video._id, {
       status: 'completed',
       duration: result.duration,
-      thumbnail: result.thumbnail,
+      thumbnail: thumbnailUrl, // Cloudinary thumbnail URL
       sensitivity: result.sensitivity,
       processingProgress: 100
     });
 
+    console.log('Video processing completed. Thumbnail:', thumbnailUrl);
+
     // Publish completion event to Ably
-    const channel = ably.channels.get(`user-channel`);
+    const channel = ably.channels.get(`user-${userId}`);
     await channel.publish('video-processing-complete', {
       videoId: video._id.toString(),
       status: 'completed'
@@ -89,7 +110,7 @@ const processVideoAsync = async (video, userId, ably) => {
     });
 
     // Publish failure event to Ably
-    const channel = ably.channels.get(`user-channel`);
+    const channel = ably.channels.get(`user-${userId}`);
     await channel.publish('video-processing-failed', {
       videoId: video._id.toString(),
       status: 'failed',
@@ -188,9 +209,15 @@ const streamVideo = async (req, res) => {
       });
     }
 
+    // For Cloudinary, we can redirect to the video URL
+    // Cloudinary handles streaming automatically
+    if (video.filePath && video.filePath.includes('cloudinary')) {
+      return res.redirect(video.filePath);
+    }
+
+    // Fallback for local files (if any)
     const videoPath = video.filePath;
     
-    // Check if file exists
     if (!fs.existsSync(videoPath)) {
       console.error('Video file not found:', videoPath);
       return res.status(404).json({
@@ -300,6 +327,12 @@ const serveThumbnail = async (req, res) => {
       });
     }
 
+    // For Cloudinary thumbnails, redirect to the thumbnail URL
+    if (video.thumbnail && video.thumbnail.includes('cloudinary')) {
+      return res.redirect(video.thumbnail);
+    }
+
+    // Fallback for local files (if any)
     const thumbnailPath = video.thumbnail;
     
     if (!fs.existsSync(thumbnailPath)) {

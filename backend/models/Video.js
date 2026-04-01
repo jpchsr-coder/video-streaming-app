@@ -51,6 +51,10 @@ const videoSchema = new mongoose.Schema({
   mimeType: {
     type: String,
     required: true
+  },
+  publicId: {
+    type: String,
+    required: false // For Cloudinary file deletion
   }
 }, {
   timestamps: true

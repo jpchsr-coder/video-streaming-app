@@ -173,22 +173,30 @@ export const VideoLibrary = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  const VideoCard = ({ video }) => (
-    <div className="card overflow-hidden hover:shadow-lg transition-shadow">
+  const VideoCard = ({ video }) => {
+    console.log("video", video);
+    
+    return(<div className="card overflow-hidden hover:shadow-lg transition-shadow">
       {/* Thumbnail */}
       <div className="relative aspect-video bg-gray-200">
-        {video.thumbnail ? (
-          <img
-            src={videoAPI.getThumbnailUrl(video._id)}
-            alt={video.title}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Video className="w-12 h-12 text-gray-400" />
-          </div>
-        )}
-        
+       {video.thumbnail ? (
+  <img
+    src={video.thumbnail}
+    alt={video.title}
+    className="w-full h-full object-cover"
+  />
+) : video.filePath ? (
+  <video
+    src={video.filePath}
+    className="w-full h-full object-cover"
+    muted
+    preload="metadata"
+  />
+) : (
+  <div className="w-full h-full flex items-center justify-center">
+    <Video className="w-12 h-12 text-gray-400" />
+  </div>
+)}
         {/* Status Badge */}
         <div className="absolute top-2 left-2">
           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(video.status)}`}>
@@ -253,8 +261,8 @@ export const VideoLibrary = () => {
           )}
         </div>
       </div>
-    </div>
-  )
+    </div>)
+  }
 
   const VideoListItem = ({ video }) => (
     <div className="card p-4 hover:shadow-lg transition-shadow">
@@ -263,7 +271,7 @@ export const VideoLibrary = () => {
         <div className="flex-shrink-0 w-24 h-16 bg-gray-200 rounded overflow-hidden">
           {video.thumbnail ? (
             <img
-              src={videoAPI.getThumbnailUrl(video._id)}
+              src={video.thumbnail}
               alt={video.title}
               className="w-full h-full object-cover"
             />
