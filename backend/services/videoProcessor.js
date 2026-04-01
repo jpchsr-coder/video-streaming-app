@@ -7,8 +7,8 @@ ffmpeg.setFfmpegPath('C:\\Users\\rahul\\AppData\\Local\\Microsoft\\WinGet\\Packa
 ffmpeg.setFfprobePath('C:\\Users\\rahul\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.1-full_build\\bin\\ffprobe.exe');
 
 class VideoProcessor {
-  constructor(io, videoId, userId) {
-    this.io = io;
+  constructor(ably, videoId, userId) {
+    this.ably = ably;
     this.videoId = videoId;
     this.userId = userId;
   }
@@ -88,13 +88,18 @@ class VideoProcessor {
     });
   }
 
-  emitProgress(progress, message) {
-    this.io.to(`user-${this.userId}`).emit('video-processing-progress', {
-      videoId: this.videoId,
-      progress,
-      message,
-      timestamp: new Date().toISOString()
-    });
+  async emitProgress(progress, message) {
+    try {
+      const channel = this.ably.channels.get(`user-${this.userId}`);
+      await channel.publish('video-processing-progress', {
+        videoId: this.videoId,
+        progress,
+        message,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Failed to emit progress to Ably:', error);
+    }
   }
 }
 

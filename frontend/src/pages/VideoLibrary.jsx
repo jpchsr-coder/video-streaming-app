@@ -54,6 +54,31 @@ export const VideoLibrary = () => {
     fetchVideos()
   }, [filters, pagination.current])
 
+  // Listen for real-time video processing updates
+  useEffect(() => {
+    const handleVideoComplete = (event) => {
+      console.log('Video processing complete event:', event.detail)
+      fetchVideos() // Refresh video list when processing completes
+      // Refresh dashboard stats
+      window.dispatchEvent(new CustomEvent('refresh-stats'))
+    }
+
+    const handleVideoFailed = (event) => {
+      console.log('Video processing failed event:', event.detail)
+      fetchVideos() // Refresh video list when processing fails
+      // Refresh dashboard stats
+      window.dispatchEvent(new CustomEvent('refresh-stats'))
+    }
+
+    window.addEventListener('video-processing-complete', handleVideoComplete)
+    window.addEventListener('video-processing-failed', handleVideoFailed)
+
+    return () => {
+      window.removeEventListener('video-processing-complete', handleVideoComplete)
+      window.removeEventListener('video-processing-failed', handleVideoFailed)
+    }
+  }, [])
+
   const fetchVideos = async () => {
     try {
       setLoading(true)

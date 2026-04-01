@@ -1,68 +1,96 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { io } from 'socket.io-client'
+import * as Ably from 'ably'
 import { useAuth } from '../hooks/useRedux'
+import { useDispatch } from 'react-redux'
+import { getDashboardStats, fetchVideos } from '../store/slices/videoSlice'
 
 const SocketContext = createContext()
 
 export const SocketProvider = ({ children }) => {
-  const [socket, setSocket] = useState(null)
+  const [ably, setAbly] = useState(null)
+  const [connectionStatus, setConnectionStatus] = useState('disconnected')
   const [processingVideos, setProcessingVideos] = useState({})
   const { isAuthenticated, user } = useAuth()
+  const dispatch = useDispatch()
 
   useEffect(() => {
-    if (user) {
-      const newSocket = io('http://localhost:5000', {
-        auth: {
-          token: localStorage.getItem('token')
-        }
+    // Initialize Ably
+    const ablyInstance = new Ably.Realtime(import.meta.env.VITE_ABLY_API_KEY || process.env.REACT_APP_ABLY_API_KEY)
+    
+    // Connection events
+    ablyInstance.connection.on('connected', () => {
+      console.log('Ably connected successfully')
+      setConnectionStatus('connected')
+    })
+
+    ablyInstance.connection.on('failed', (err) => {
+      console.error('Ably connection failed:', err)
+      setConnectionStatus('failed')
+    })
+
+    ablyInstance.connection.on('disconnected', () => {
+      console.log('Ably disconnected')
+      setConnectionStatus('disconnected')
+    })
+
+    setAbly(ablyInstance)
+
+    // Cleanup
+    return () => {
+      ablyInstance.close()
+    }
+  }, [])
+
+  const fetchStats = async () => {
+    try {
+      console.log('Dispatching getDashboardStats from SocketContext')
+      dispatch(getDashboardStats())
+    } catch (error) {
+      console.error('Failed to fetch stats:', error)
+    }
+  }
+
+  useEffect(() => {
+    if (user && ably) {
+      const channel = ably.channels.get(`user-channel`)
+      
+      // Subscribe to progress updates - trigger video list refresh
+      channel.subscribe('video-processing-progress', (message) => {
+        console.log('Video processing progress:', message.data)
+        fetchStats()
+        // You can show a toast notification here if needed
       })
 
-      newSocket.on('connect', () => {
-        console.log('Connected to server')
-        newSocket.emit('join-user-room', user._id)
-      })
-
-      newSocket.on('video-processing-progress', (data) => {
-        setProcessingVideos(prev => ({
-          ...prev,
-          [data.videoId]: {
-            progress: data.progress,
-            message: data.message,
-            timestamp: data.timestamp
-          }
+      // Subscribe to completion - refresh video list
+      channel.subscribe('video-processing-complete', (message) => {
+        console.log('Video processing complete:', message.data)
+        fetchStats()
+        // Trigger video list refresh by dispatching a refresh action
+        window.dispatchEvent(new CustomEvent('video-processing-complete', {
+          detail: message.data
         }))
       })
 
-      newSocket.on('video-processing-complete', (data) => {
-        setProcessingVideos(prev => {
-          const updated = { ...prev }
-          delete updated[data.videoId]
-          return updated
-        })
+      // Subscribe to failures - refresh video list
+      channel.subscribe('video-processing-failed', (message) => {
+        console.log('Video processing failed:', message.data)
+        fetchStats()
+        // Trigger video list refresh by dispatching a refresh action
+        window.dispatchEvent(new CustomEvent('video-processing-failed', {
+          detail: message.data
+        }))
       })
 
-      newSocket.on('video-processing-failed', (data) => {
-        setProcessingVideos(prev => {
-          const updated = { ...prev }
-          delete updated[data.videoId]
-          return updated
-        })
-      })
-
-      newSocket.on('disconnect', () => {
-        console.log('Disconnected from server')
-      })
-
-      setSocket(newSocket)
-
+      // Return unsubscribe function
       return () => {
-        newSocket.close()
+        channel.unsubscribe()
       }
     }
-  }, [user])
+  }, [user, ably])
 
   const value = {
-    socket,
+    ably,
+    connectionStatus,
     processingVideos,
     clearProcessingVideo: (videoId) => {
       setProcessingVideos(prev => {

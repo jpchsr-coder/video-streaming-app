@@ -34,6 +34,21 @@ console.log("stats----------", stats);
     getDashboardStats()
   }, [getDashboardStats])
 
+  // Listen for real-time stats refresh events
+  useEffect(() => {
+    const handleRefreshStats = () => {
+      console.log('Refreshing dashboard stats - event received')
+      console.log('Current stats before refresh:', stats)
+      getDashboardStats()
+    }
+
+    window.addEventListener('refresh-stats', handleRefreshStats)
+
+    return () => {
+      window.removeEventListener('refresh-stats', handleRefreshStats)
+    }
+  }, [getDashboardStats, stats])
+
   const statCards = [
     {
       title: 'Total Videos',

@@ -45,9 +45,12 @@ export const getDashboardStats = createAsyncThunk(
   'videos/getDashboardStats',
   async (_, { rejectWithValue }) => {
     try {
+      console.log('Making API call to get dashboard stats...')
       const response = await videoAPI.getDashboardStats()
+      console.log('Dashboard stats API response:', response.data)
       return response.data
     } catch (error) {
+      console.error('Dashboard stats API error:', error)
       const message = error.response?.data?.message || 'Failed to get stats'
       return rejectWithValue(message)
     }
@@ -137,15 +140,18 @@ const videoSlice = createSlice({
       })
       // Get Dashboard Stats
       .addCase(getDashboardStats.pending, (state) => {
+        console.log('getDashboardStats.pending - setting loading to true')
         state.loading = true
         state.error = null
       })
       .addCase(getDashboardStats.fulfilled, (state, action) => {
+        console.log('getDashboardStats.fulfilled - updating stats:', action.payload)
         state.loading = false
         state.stats = action.payload
         state.error = null
       })
       .addCase(getDashboardStats.rejected, (state, action) => {
+        console.log('getDashboardStats.rejected - error:', action.payload)
         state.loading = false
         state.error = action.payload
       })

@@ -23,7 +23,7 @@ const uploadVideo = async (req, res) => {
     }
 
     const { title } = req.body;
-    const io = req.app.get('io');
+    const ably = req.app.get('ably');
 
     // Create video record
     const video = await Video.create({
@@ -37,7 +37,7 @@ const uploadVideo = async (req, res) => {
     });
 
     // Start async processing
-    processVideoAsync(video, req.user._id, io);
+    processVideoAsync(video, req.user._id, ably);
 
     res.status(201).json({
       success: true,
@@ -59,9 +59,9 @@ const uploadVideo = async (req, res) => {
   }
 };
 
-const processVideoAsync = async (video, userId, io) => {
+const processVideoAsync = async (video, userId, ably) => {
   try {
-    const processor = new VideoProcessor(io, video._id.toString(), userId);
+    const processor = new VideoProcessor(ably, video._id.toString(), userId);
     const result = await processor.processVideo(video.filePath, video.filePath);
 
     // Update video with processing results
@@ -73,8 +73,9 @@ const processVideoAsync = async (video, userId, io) => {
       processingProgress: 100
     });
 
-    // Emit completion event
-    io.to(`user-${userId}`).emit('video-processing-complete', {
+    // Publish completion event to Ably
+    const channel = ably.channels.get(`user-channel`);
+    await channel.publish('video-processing-complete', {
       videoId: video._id.toString(),
       status: 'completed'
     });
@@ -87,8 +88,9 @@ const processVideoAsync = async (video, userId, io) => {
       processingProgress: 0
     });
 
-    // Emit failure event
-    io.to(`user-${userId}`).emit('video-processing-failed', {
+    // Publish failure event to Ably
+    const channel = ably.channels.get(`user-channel`);
+    await channel.publish('video-processing-failed', {
       videoId: video._id.toString(),
       status: 'failed',
       error: error.message

@@ -255,16 +255,7 @@ export const VideoPlayer = () => {
           Back to Library
         </button>
         
-        <div className="flex items-center space-x-2">
-          <button className="btn btn-secondary btn-sm">
-            <Share className="w-4 h-4 mr-2" />
-            Share
-          </button>
-          <button className="btn btn-secondary btn-sm">
-            <Download className="w-4 h-4 mr-2" />
-            Download
-          </button>
-        </div>
+      
       </div>
 
       {/* Video Player */}
