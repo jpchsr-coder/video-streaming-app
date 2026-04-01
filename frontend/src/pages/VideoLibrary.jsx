@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { videoAPI } from '../services/api'
 import { LoadingSpinner } from '../components/LoadingSpinner'
@@ -13,7 +13,8 @@ import {
   AlertTriangle,
   Eye,
   Calendar,
-  FileText
+  FileText,
+  X
 } from 'lucide-react'
 
 export const VideoLibrary = () => {
@@ -30,6 +31,24 @@ export const VideoLibrary = () => {
     total: 0,
     count: 0
   })
+  const [searchInput, setSearchInput] = useState('')
+
+  // Debounced search function with proper cleanup
+  const debouncedSearch = useCallback(() => {
+    const timer = setTimeout(() => {
+      if (searchInput.trim()) {
+        setFilters(prev => ({ ...prev, search: searchInput }))
+        setPagination(prev => ({ ...prev, current: 1 }))
+      }
+    }, 800) // Increased delay to reduce API calls
+    
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
+  useEffect(() => {
+    const cleanup = debouncedSearch()
+    return cleanup
+  }, [debouncedSearch])
 
   useEffect(() => {
     fetchVideos()
@@ -58,6 +77,22 @@ export const VideoLibrary = () => {
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }))
+    setPagination(prev => ({ ...prev, current: 1 }))
+  }
+
+  const handleSearchChange = (value) => {
+    setSearchInput(value)
+    if (!value.trim()) {
+      setFilters(prev => ({ ...prev, search: '' }))
+      setPagination(prev => ({ ...prev, current: 1 }))
+    }
+  }
+
+  const hasActiveFilters = filters.status || filters.sensitivity || filters.search
+
+  const clearSearch = () => {
+    setSearchInput('')
+    setFilters(prev => ({ ...prev, search: '' }))
     setPagination(prev => ({ ...prev, current: 1 }))
   }
 
@@ -295,10 +330,19 @@ export const VideoLibrary = () => {
       <input
         type="text"
         placeholder="Search videos..."
-        className="input pl-10 w-full"
-        value={filters.search}
-        onChange={(e) => handleFilterChange('search', e.target.value)}
+        className="input pl-10 pr-10 w-full"
+        value={searchInput}
+        onChange={(e) => handleSearchChange(e.target.value)}
       />
+      {searchInput && (
+        <button
+          onClick={clearSearch}
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors"
+          title="Clear search"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
     </div>
 
     {/* Status Filter */}
@@ -325,13 +369,19 @@ export const VideoLibrary = () => {
     </select>
 
     {/* Clear Button */}
-    <button
-      onClick={() => setFilters({ status: '', sensitivity: '', search: '' })}
-      className="btn btn-secondary w-full flex items-center justify-center"
-    >
-      <Filter className="w-4 h-4 mr-2" />
-      Clear
-    </button>
+    {hasActiveFilters && (
+      <button
+        onClick={() => {
+          setFilters({ status: '', sensitivity: '', search: '' })
+          setSearchInput('')
+          setPagination({ ...pagination, current: 1 })
+        }}
+        className="btn btn-secondary w-full flex items-center justify-center"
+      >
+        <Filter className="w-4 h-4 mr-2" />
+        Clear
+      </button>
+    )}
 
   </div>
 </div>
