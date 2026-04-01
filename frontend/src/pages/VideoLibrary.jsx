@@ -200,20 +200,23 @@ export const VideoLibrary = () => {
         </div>
 
         {/* Actions */}
-        <div className="mt-4 flex justify-between">
+        <div className="mt-4 flex gap-2">
           <Link
             to={`/videos/${video._id}`}
-            className="btn btn-secondary btn-sm"
+            className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200 shadow-sm"
           >
-            <Eye className="w-4 h-4 mr-1" />
+            <Eye className="w-4 h-4 mr-1.5" />
             View
           </Link>
           
           {video.status === 'completed' && (
             <Link
               to={`/videos/${video._id}`}
-              className="btn btn-primary btn-sm"
+              className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 shadow-sm"
             >
+              <svg className="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+              </svg>
               Play
             </Link>
           )}
@@ -272,10 +275,10 @@ export const VideoLibrary = () => {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center space-x-2 ml-4">
+        <div className="flex items-center gap-2 ml-4">
           <Link
             to={`/videos/${video._id}`}
-            className="btn btn-secondary btn-sm"
+            className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200 shadow-sm"
           >
             <Eye className="w-4 h-4" />
           </Link>
@@ -283,9 +286,11 @@ export const VideoLibrary = () => {
           {video.status === 'completed' && (
             <Link
               to={`/videos/${video._id}`}
-              className="btn btn-primary btn-sm"
+              className="inline-flex items-center justify-center px-3 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 shadow-sm"
             >
-              Play
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+              </svg>
             </Link>
           )}
         </div>

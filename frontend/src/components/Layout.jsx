@@ -42,7 +42,7 @@ export const Layout = () => {
     logout()
     navigate('/login')
   }
-  console.log(user)
+ console.log('User:', user)
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Video Library', href: '/videos', icon: Video },
@@ -152,9 +152,7 @@ export const Layout = () => {
             }
           }}
         >
-          <ListItemIcon sx={{ minWidth: 40 }}>
-           Logout
-          </ListItemIcon>
+         
           <ListItemText 
             primary="Logout"
             primaryTypographyProps={{
@@ -256,7 +254,7 @@ export const Layout = () => {
         </AppBar>
 
         {/* Page Content */}
-        <Toolbar /> {/* Spacer for fixed AppBar */}
+        {/* <Toolbar /> Spacer for fixed AppBar */}
         <Box
           sx={{
             p: { xs: 2, sm: 3 },
