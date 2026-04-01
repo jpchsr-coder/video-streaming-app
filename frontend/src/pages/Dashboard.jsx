@@ -9,7 +9,8 @@ import {
   CheckCircle,
   Clock,
   Film,
-  TrendingUp
+  TrendingUp,
+  HardDrive
 } from 'lucide-react'
 import {
   Box,
@@ -29,6 +30,15 @@ export const Dashboard = () => {
   const { stats, loading, getDashboardStats } = useVideos()
   const { processingVideos, clearProcessingVideo } = useSocket()
 console.log("stats----------", stats);
+
+  // Format storage size
+  const formatStorage = (bytes) => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
 
   useEffect(() => {
     getDashboardStats()
@@ -81,6 +91,14 @@ console.log("stats----------", stats);
       color: '#ef4444',
       bgColor: '#fee2e2',
       link: '/videos?sensitivity=flagged'
+    },
+    {
+      title: 'Total Storage',
+      value: formatStorage(stats?.data?.totalStorage || 0),
+      icon: HardDrive,
+      color: '#8b5cf6',
+      bgColor: '#ede9fe',
+      link: '/videos'
     }
   ]
 
@@ -137,7 +155,7 @@ console.log("stats----------", stats);
         {statCards.map((stat, index) => {
           const Icon = stat.icon
           return (
-            <Grid item xs={6} sm={3} key={index}>
+            <Grid item xs={6} sm={4} md={2.4} key={index}>
               <Link
                 to={stat.link}
                 style={{ textDecoration: 'none' }}
@@ -335,7 +353,7 @@ console.log("stats----------", stats);
               variant="body2"
               sx={{ color: '#3b82f6', fontWeight: 600 }}
             >
-              {stats?.totalVideos || 0} videos
+              {formatStorage(stats?.data?.totalStorage || 0)}
             </Typography>
           </Box>
         </Box>

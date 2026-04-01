@@ -245,20 +245,27 @@ const getDashboardStats = async (req, res) => {
   try {
     const userId = req.user._id;
     
-    const stats = await Promise.all([
+    const [totalVideos, processingVideos, flaggedVideos, completedVideos, storageResult] = await Promise.all([
       Video.countDocuments({ uploadedBy: userId }),
       Video.countDocuments({ uploadedBy: userId, status: 'processing' }),
       Video.countDocuments({ uploadedBy: userId, sensitivity: 'flagged' }),
-      Video.countDocuments({ uploadedBy: userId, status: 'completed' })
+      Video.countDocuments({ uploadedBy: userId, status: 'completed' }),
+      Video.aggregate([
+        { $match: { uploadedBy: userId } },
+        { $group: { _id: null, totalSize: { $sum: "$size" } } }
+      ])
     ]);
+
+    const totalStorage = storageResult.length > 0 ? storageResult[0].totalSize : 0;
 
     res.status(200).json({
       success: true,
       data: {
-        totalVideos: stats[0],
-        processingVideos: stats[1],
-        flaggedVideos: stats[2],
-        completedVideos: stats[3]
+        totalVideos,
+        processingVideos,
+        flaggedVideos,
+        completedVideos,
+        totalStorage
       }
     });
   } catch (error) {
