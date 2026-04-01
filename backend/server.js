@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 require('dotenv').config();
@@ -22,12 +21,6 @@ const io = new Server(server, {
   }
 });
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
-});
-
 // Middleware
 app.use(helmet({
   contentSecurityPolicy: {
@@ -41,7 +34,6 @@ app.use(helmet({
     },
   },
 }));
-app.use(limiter);
 app.use(morgan('combined'));
 app.use(cors({
   origin: ["http://localhost:3000", "http://localhost:5173"],
