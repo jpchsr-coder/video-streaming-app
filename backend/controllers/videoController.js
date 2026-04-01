@@ -100,13 +100,21 @@ const processVideoAsync = async (video, userId, ably) => {
 
 const getVideos = async (req, res) => {
   try {
-    const { status, sensitivity, page = 1, limit = 10 } = req.query;
+    const { status, sensitivity, page = 1, limit = 10, search } = req.query;
     
     // Build query
     const query = { uploadedBy: req.user._id };
     
     if (status) query.status = status;
     if (sensitivity) query.sensitivity = sensitivity;
+    
+    // Add search functionality
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
 
     // Pagination
     const skip = (page - 1) * limit;

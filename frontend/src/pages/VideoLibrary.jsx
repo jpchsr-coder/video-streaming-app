@@ -39,6 +39,10 @@ export const VideoLibrary = () => {
       if (searchInput.trim()) {
         setFilters(prev => ({ ...prev, search: searchInput }))
         setPagination(prev => ({ ...prev, current: 1 }))
+      } else {
+        // Clear search when input is empty
+        setFilters(prev => ({ ...prev, search: '' }))
+        setPagination(prev => ({ ...prev, current: 1 }))
       }
     }, 800) // Increased delay to reduce API calls
     
@@ -90,7 +94,9 @@ export const VideoLibrary = () => {
         )
       }
       
+      console.log('Fetching videos with params:', params)
       const response = await videoAPI.getVideos(params)
+      console.log('Videos API response:', response.data)
       setVideos(response.data.data.videos)
       setPagination(response.data.data.pagination)
     } catch (error) {
