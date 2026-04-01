@@ -75,9 +75,6 @@ jspm_packages/
 # TernJS port file
 .tern-port
 
-# Uploads directory
-backend/uploads/videos/
-backend/uploads/thumbnails/
 
 # OS generated files
 .DS_Store
