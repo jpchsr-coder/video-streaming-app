@@ -3,15 +3,33 @@ import { authAPI } from '../../services/api'
 
 // Initial state with localStorage persistence
 const getInitialState = () => {
-  const token = localStorage.getItem('token')
-  const user = localStorage.getItem('user')
-  
-  return {
-    user: user ? JSON.parse(user) : null,
-    token: token,
-    isAuthenticated: !!token,
-    loading: false, // Start with false, will be set to true only during auth operations
-    error: null
+  try {
+    const token = localStorage.getItem('token')
+    const userStr = localStorage.getItem('user')
+    
+    console.log('Initial auth check - token:', token ? 'exists' : 'none')
+    console.log('Initial auth check - user:', userStr ? 'exists' : 'none')
+    
+    const user = userStr ? JSON.parse(userStr) : null
+    
+    return {
+      user: user,
+      token: token,
+      isAuthenticated: !!token,
+      loading: false,
+      error: null
+    }
+  } catch (error) {
+    console.error('Error parsing initial auth state:', error)
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    return {
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      loading: false,
+      error: null
+    }
   }
 }
 
@@ -58,9 +76,17 @@ export const validateToken = createAsyncThunk(
   'auth/validateToken',
   async (_, { rejectWithValue }) => {
     try {
+      console.log('Validating token...')
       const response = await authAPI.getProfile()
-      return { user: response.data.user }
+      console.log('Token validation response:', response.data)
+      
+      // Use localStorage user data instead of API response
+      const userStr = localStorage.getItem('user')
+      const user = userStr ? JSON.parse(userStr) : null
+      
+      return { user: user }
     } catch (error) {
+      console.error('Token validation failed:', error)
       // Clear invalid token
       localStorage.removeItem('token')
       localStorage.removeItem('user')
