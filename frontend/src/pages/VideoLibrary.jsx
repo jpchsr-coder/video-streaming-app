@@ -286,54 +286,55 @@ export const VideoLibrary = () => {
       </div>
 
       {/* Filters */}
-      <div className="card p-4">
-        <div className="flex flex-wrap items-center gap-4">
-          {/* Search */}
-          <div className="flex-1 min-w-64">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search videos..."
-                className="input pl-10"
-                value={filters.search}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-              />
-            </div>
-          </div>
+     <div className="card p-4">
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 items-center">
+    
+    {/* Search */}
+    <div className="relative col-span-1 sm:col-span-2">
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <input
+        type="text"
+        placeholder="Search videos..."
+        className="input pl-10 w-full"
+        value={filters.search}
+        onChange={(e) => handleFilterChange('search', e.target.value)}
+      />
+    </div>
 
-          {/* Status Filter */}
-          <select
-            className="input min-w-32"
-            value={filters.status}
-            onChange={(e) => handleFilterChange('status', e.target.value)}
-          >
-            <option value="">All Status</option>
-            <option value="processing">Processing</option>
-            <option value="completed">Completed</option>
-            <option value="failed">Failed</option>
-          </select>
+    {/* Status Filter */}
+    <select
+      className="input w-full"
+      value={filters.status}
+      onChange={(e) => handleFilterChange('status', e.target.value)}
+    >
+      <option value="">All Status</option>
+      <option value="processing">Processing</option>
+      <option value="completed">Completed</option>
+      <option value="failed">Failed</option>
+    </select>
 
-          {/* Sensitivity Filter */}
-          <select
-            className="input min-w-32"
-            value={filters.sensitivity}
-            onChange={(e) => handleFilterChange('sensitivity', e.target.value)}
-          >
-            <option value="">All Sensitivity</option>
-            <option value="safe">Safe</option>
-            <option value="flagged">Flagged</option>
-          </select>
+    {/* Sensitivity Filter */}
+    <select
+      className="input w-full"
+      value={filters.sensitivity}
+      onChange={(e) => handleFilterChange('sensitivity', e.target.value)}
+    >
+      <option value="">All Sensitivity</option>
+      <option value="safe">Safe</option>
+      <option value="flagged">Flagged</option>
+    </select>
 
-          <button
-            onClick={() => setFilters({ status: '', sensitivity: '', search: '' })}
-            className="btn btn-secondary"
-          >
-            <Filter className="w-4 h-4 mr-2" />
-            Clear Filters
-          </button>
-        </div>
-      </div>
+    {/* Clear Button */}
+    <button
+      onClick={() => setFilters({ status: '', sensitivity: '', search: '' })}
+      className="btn btn-secondary w-full flex items-center justify-center"
+    >
+      <Filter className="w-4 h-4 mr-2" />
+      Clear
+    </button>
+
+  </div>
+</div>
 
       {/* Videos */}
       {loading ? (
