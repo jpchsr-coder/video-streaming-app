@@ -290,6 +290,10 @@ const serveThumbnail = async (req, res) => {
       });
     }
 
+    // Set CORS headers for thumbnails
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
     // Serve the thumbnail file
     res.sendFile(thumbnailPath);
   } catch (error) {
