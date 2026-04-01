@@ -122,7 +122,7 @@ console.log("stats----------", stats);
         {statCards.map((stat, index) => {
           const Icon = stat.icon
           return (
-            <Grid item xs={12} sm={6} lg={3} key={index}>
+            <Grid item xs={6} sm={3} key={index}>
               <Link
                 to={stat.link}
                 style={{ textDecoration: 'none' }}
