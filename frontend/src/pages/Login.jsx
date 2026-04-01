@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../hooks/useRedux'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -11,7 +11,7 @@ export const Login = () => {
     password: ''
   })
   const [showPassword, setShowPassword] = useState(false)
-  const { login, loading } = useAuth()
+  const { loginUser, loading } = useAuth()
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -24,7 +24,7 @@ export const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    const result = await login(formData)
+    const result = await loginUser(formData)
     if (result.success) {
       toast.success('Login successful!')
       navigate('/dashboard')

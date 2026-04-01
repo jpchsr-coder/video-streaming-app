@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../hooks/useRedux'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -15,7 +15,7 @@ export const Register = () => {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const { register, loading } = useAuth()
+  const { registerUser, loading } = useAuth()
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -35,7 +35,7 @@ export const Register = () => {
 
     const { confirmPassword, ...registerData } = formData
     
-    const result = await register(registerData)
+    const result = await registerUser(registerData)
     if (result.success) {
       toast.success('Registration successful!')
       navigate('/dashboard')
