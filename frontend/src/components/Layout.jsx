@@ -42,7 +42,7 @@ export const Layout = () => {
     logout()
     navigate('/login')
   }
-
+  console.log(user)
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Video Library', href: '/videos', icon: Video },

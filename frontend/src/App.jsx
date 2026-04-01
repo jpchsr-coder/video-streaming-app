@@ -10,11 +10,13 @@ import { VideoPlayer } from './pages/VideoPlayer'
 import { UploadComponent } from './pages/Upload'
 import { Box, CircularProgress } from '@mui/material'
 import { useEffect } from 'react'
+import { validateToken } from './store/slices/authSlice'
+import { useDispatch } from 'react-redux'
 
 function App() {
   const { isAuthenticated, loading } = useAuth()
   const { setLoading } = useUI()
-
+const dispatch = useDispatch()
   // Initialize auth state on app load
   useEffect(() => {
     const initializeAuth = async () => {
@@ -28,7 +30,6 @@ function App() {
       setLoading('global', true)
       try {
         // Token exists, validate it with backend
-        const { validateToken } = require('./store/slices/authSlice').default
         const result = await dispatch(validateToken())
         console.log('Token validation result:', result)
       } catch (error) {
