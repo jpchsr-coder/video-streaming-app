@@ -95,7 +95,7 @@ const processVideoAsync = async (video, userId, ably) => {
     console.log('Video processing completed. Thumbnail:', thumbnailUrl);
 
     // Publish completion event to Ably
-    const channel = ably.channels.get(`user-${userId}`);
+    const channel = ably.channels.get(`user-channel`);
     await channel.publish('video-processing-complete', {
       videoId: video._id.toString(),
       status: 'completed'
@@ -110,7 +110,7 @@ const processVideoAsync = async (video, userId, ably) => {
     });
 
     // Publish failure event to Ably
-    const channel = ably.channels.get(`user-${userId}`);
+    const channel = ably.channels.get(`user-channel`);
     await channel.publish('video-processing-failed', {
       videoId: video._id.toString(),
       status: 'failed',

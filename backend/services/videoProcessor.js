@@ -120,7 +120,8 @@ class VideoProcessor {
 
   async emitProgress(progress, message) {
     try {
-      const channel = this.ably.channels.get(`user-${this.userId}`);
+      const channel = this.ably.channels.get(`user-channel`);
+      console.log('Emitting progress to Ably:',channel, progress, message);
       await channel.publish('video-processing-progress', {
         videoId: this.videoId,
         progress,

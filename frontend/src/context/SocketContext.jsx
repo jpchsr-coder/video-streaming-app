@@ -3,15 +3,34 @@ import * as Ably from 'ably'
 import { useAuth } from '../hooks/useRedux'
 import { useDispatch } from 'react-redux'
 import { getDashboardStats, fetchVideos } from '../store/slices/videoSlice'
+import { videoAPI } from '../services/api'
 
 const SocketContext = createContext()
 
 export const SocketProvider = ({ children }) => {
   const [ably, setAbly] = useState(null)
+  const [videoData, setVideoData] = useState(null)
   const [connectionStatus, setConnectionStatus] = useState('disconnected')
   const [processingVideos, setProcessingVideos] = useState({})
   const { isAuthenticated, user } = useAuth()
   const dispatch = useDispatch()
+
+
+   const fetchVideos = async () => {
+      try {
+        const params = {
+          page: 1,
+          limit: 12,
+        }
+        console.log('Fetching videos with params:', params)
+        const response = await videoAPI.getVideos(params)
+        console.log('Videos API response:', response.data)
+        setVideoData(response.data.data)
+        
+      } catch (error) {
+        console.error('Failed to fetch videos:', error)
+      } 
+    }
 
   useEffect(() => {
     // Initialize Ably
@@ -56,15 +75,17 @@ export const SocketProvider = ({ children }) => {
       
       // Subscribe to progress updates - trigger video list refresh
       channel.subscribe('video-processing-progress', (message) => {
-        console.log('Video processing progress:', message.data)
+        console.log('Video processing progress:------------------------', message.data)
         fetchStats()
+        fetchVideos()
         // You can show a toast notification here if needed
       })
 
       // Subscribe to completion - refresh video list
-      channel.subscribe('video-processing-complete', (message) => {
+      channel.subscribe('video-processing-complete-------------------', (message) => {
         console.log('Video processing complete:', message.data)
         fetchStats()
+        fetchVideos()
         // Trigger video list refresh by dispatching a refresh action
         window.dispatchEvent(new CustomEvent('video-processing-complete', {
           detail: message.data
@@ -75,6 +96,7 @@ export const SocketProvider = ({ children }) => {
       channel.subscribe('video-processing-failed', (message) => {
         console.log('Video processing failed:', message.data)
         fetchStats()
+        fetchVideos()
         // Trigger video list refresh by dispatching a refresh action
         window.dispatchEvent(new CustomEvent('video-processing-failed', {
           detail: message.data
@@ -92,6 +114,7 @@ export const SocketProvider = ({ children }) => {
     ably,
     connectionStatus,
     processingVideos,
+    videoData,
     clearProcessingVideo: (videoId) => {
       setProcessingVideos(prev => {
         const updated = { ...prev }

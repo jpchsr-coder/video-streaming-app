@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { videoAPI } from '../services/api'
 import { LoadingSpinner } from '../components/LoadingSpinner'
+import { useSocket } from '../context/SocketContext'
+
 import { 
   Video, 
   Filter, 
@@ -26,6 +28,7 @@ export const VideoLibrary = () => {
     sensitivity: '',
     search: ''
   })
+  const {videoData} = useSocket()
   const [pagination, setPagination] = useState({
     current: 1,
     total: 0,
@@ -57,6 +60,19 @@ export const VideoLibrary = () => {
   useEffect(() => {
     fetchVideos()
   }, [filters, pagination.current])
+
+
+  useEffect(() => {
+    console.log('Video data updated:', videoData)
+    if(videoData) {
+      setVideos(videoData.videos)
+      setPagination({
+        current: videoData.pagination.current,
+        total: videoData.pagination.total,
+        count: videoData.pagination.count
+      })
+    }
+  }, [videoData])
 
   // Listen for real-time video processing updates
   useEffect(() => {
