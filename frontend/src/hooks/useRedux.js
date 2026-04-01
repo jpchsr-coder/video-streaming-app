@@ -16,6 +16,8 @@ export const useAppSelector = (selector) => useSelector(selector)
 export const useAuth = () => {
   const auth = useAppSelector(state => state.auth)
   const dispatch = useAppDispatch()
+
+  console.log('Auth state:', auth)
   
   const loginUser = useCallback((credentials) => {
     return dispatch(login(credentials))

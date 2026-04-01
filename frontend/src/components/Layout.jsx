@@ -196,7 +196,12 @@ export const Layout = () => {
             boxSizing: 'border-box',
             width: drawerWidth,
             borderRight: '1px solid #e2e8f0',
-            position: 'relative'
+            position: 'fixed',
+            height: '100vh',
+            overflow: 'hidden',
+            top: 0,
+            left: 0,
+            zIndex: 1100
           }
         }}
         open
@@ -210,7 +215,8 @@ export const Layout = () => {
         sx={{
           flexGrow: 1,
           width: { lg: `calc(100% - ${drawerWidth}px)` },
-          minWidth: 0
+          minWidth: 0,
+          marginLeft: { lg: `${drawerWidth}px` }
         }}
       >
         {/* Top Bar */}
