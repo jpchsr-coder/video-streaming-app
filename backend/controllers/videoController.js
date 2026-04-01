@@ -178,6 +178,10 @@ const streamVideo = async (req, res) => {
       });
     }
 
+    // Set CORS headers for video streaming
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
     const videoPath = video.filePath;
     
     if (!fs.existsSync(videoPath)) {
@@ -256,10 +260,52 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
+const serveThumbnail = async (req, res) => {
+  try {
+    const video = await Video.findOne({
+      _id: req.params.id,
+      uploadedBy: req.user._id
+    });
+
+    if (!video) {
+      return res.status(404).json({
+        success: false,
+        message: 'Video not found'
+      });
+    }
+
+    if (!video.thumbnail) {
+      return res.status(404).json({
+        success: false,
+        message: 'Thumbnail not found'
+      });
+    }
+
+    const thumbnailPath = video.thumbnail;
+    
+    if (!fs.existsSync(thumbnailPath)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Thumbnail file not found'
+      });
+    }
+
+    // Serve the thumbnail file
+    res.sendFile(thumbnailPath);
+  } catch (error) {
+    console.error('Serve thumbnail error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error serving thumbnail'
+    });
+  }
+};
+
 module.exports = {
   uploadVideo,
   getVideos,
   getVideo,
   streamVideo,
-  getDashboardStats
+  getDashboardStats,
+  serveThumbnail
 };

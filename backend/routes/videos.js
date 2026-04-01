@@ -7,7 +7,8 @@ const {
   getVideos,
   getVideo,
   streamVideo,
-  getDashboardStats
+  getDashboardStats,
+  serveThumbnail
 } = require('../controllers/videoController');
 
 const router = express.Router();
@@ -32,5 +33,6 @@ router.get('/', getVideos);
 router.get('/dashboard/stats', getDashboardStats);
 router.get('/:id', getVideo);
 router.get('/stream/:id', streamVideo);
+router.get('/thumbnail/:id', serveThumbnail);
 
 module.exports = router;

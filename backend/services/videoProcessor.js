@@ -2,6 +2,10 @@ const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
 const fs = require('fs');
 
+// Set FFmpeg path to the installed location
+ffmpeg.setFfmpegPath('C:\\Users\\rahul\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.1-full_build\\bin\\ffmpeg.exe');
+ffmpeg.setFfprobePath('C:\\Users\\rahul\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.1-full_build\\bin\\ffprobe.exe');
+
 class VideoProcessor {
   constructor(io, videoId, userId) {
     this.io = io;
@@ -28,6 +32,12 @@ class VideoProcessor {
           path.dirname(outputPath).replace('videos', 'thumbnails'),
           `thumb-${path.basename(outputPath, path.extname(outputPath))}.jpg`
         );
+
+        // Ensure thumbnails directory exists
+        const thumbnailDir = path.dirname(thumbnailPath);
+        if (!fs.existsSync(thumbnailDir)) {
+          fs.mkdirSync(thumbnailDir, { recursive: true });
+        }
 
         ffmpeg(inputPath)
           .screenshots({

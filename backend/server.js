@@ -29,7 +29,18 @@ const limiter = rateLimit({
 });
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      mediaSrc: ["'self'", "blob:"],
+      connectSrc: ["'self'"],
+    },
+  },
+}));
 app.use(limiter);
 app.use(morgan('combined'));
 app.use(cors({
@@ -38,6 +49,14 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Set Cross-Origin-Resource-Policy for video files
+app.use((req, res, next) => {
+  if (req.path.startsWith('/uploads/videos')) {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  }
+  next();
+});
 
 // Static files for uploads
 app.use('/uploads', express.static('uploads'));

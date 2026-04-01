@@ -63,7 +63,14 @@ export const videoAPI = {
   getVideos: (params) => api.get('/videos', { params }),
   getVideo: (id) => api.get(`/videos/${id}`),
   getDashboardStats: () => api.get('/videos/dashboard/stats'),
-  getStreamUrl: (id) => `${API_BASE_URL}/videos/stream/${id}`,
+  getStreamUrl: (id) => {
+    const token = localStorage.getItem('token');
+    return `${API_BASE_URL}/videos/stream/${id}?token=${token}`;
+  },
+  getThumbnailUrl: (id) => {
+    const token = localStorage.getItem('token');
+    return `${API_BASE_URL}/videos/thumbnail/${id}?token=${token}`;
+  },
 }
 
 export default api

@@ -3,7 +3,12 @@ const User = require('../models/User');
 
 const auth = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    let token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    // For video streaming, also accept token from query parameters
+    if (!token && req.query.token) {
+      token = req.query.token;
+    }
     
     if (!token) {
       return res.status(401).json({ message: 'Access denied. No token provided.' });

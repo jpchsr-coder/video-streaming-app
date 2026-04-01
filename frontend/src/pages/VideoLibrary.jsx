@@ -113,7 +113,7 @@ export const VideoLibrary = () => {
       <div className="relative aspect-video bg-gray-200">
         {video.thumbnail ? (
           <img
-            src={`http://localhost:5000/${video.thumbnail}`}
+            src={videoAPI.getThumbnailUrl(video._id)}
             alt={video.title}
             className="w-full h-full object-cover"
           />
@@ -194,7 +194,7 @@ export const VideoLibrary = () => {
         <div className="flex-shrink-0 w-24 h-16 bg-gray-200 rounded overflow-hidden">
           {video.thumbnail ? (
             <img
-              src={`http://localhost:5000/${video.thumbnail}`}
+              src={videoAPI.getThumbnailUrl(video._id)}
               alt={video.title}
               className="w-full h-full object-cover"
             />
