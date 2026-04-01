@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { videoAPI } from '../services/api'
-import { LoadingSpinner } from '../components/LoadingSpinner'
+import { useVideos } from '../hooks/useRedux'
 import { 
   Video, 
   Upload, 
@@ -11,148 +10,318 @@ import {
   Film,
   TrendingUp
 } from 'lucide-react'
+import {
+  Box,
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  Grid,
+  Chip,
+  LinearProgress,
+  Paper,
+  Avatar,
+  IconButton
+} from '@mui/material'
 
 export const Dashboard = () => {
-  const [stats, setStats] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const { stats, loading, getDashboardStats } = useVideos()
 
   useEffect(() => {
-    fetchStats()
-  }, [])
-
-  const fetchStats = async () => {
-    try {
-      const response = await videoAPI.getDashboardStats()
-      setStats(response.data.data)
-    } catch (error) {
-      console.error('Failed to fetch dashboard stats:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <LoadingSpinner size="lg" />
-      </div>
-    )
-  }
+    getDashboardStats()
+  }, [getDashboardStats])
 
   const statCards = [
     {
       title: 'Total Videos',
       value: stats?.totalVideos || 0,
       icon: Video,
-      color: 'bg-blue-500',
+      color: '#3b82f6',
+      bgColor: '#dbeafe',
       link: '/videos'
     },
     {
       title: 'Processing',
       value: stats?.processingVideos || 0,
       icon: Clock,
-      color: 'bg-yellow-500',
+      color: '#f59e0b',
+      bgColor: '#fef3c7',
       link: '/videos?status=processing'
     },
     {
       title: 'Completed',
       value: stats?.completedVideos || 0,
       icon: CheckCircle,
-      color: 'bg-green-500',
+      color: '#22c55e',
+      bgColor: '#dcfce7',
       link: '/videos?status=completed'
     },
     {
       title: 'Flagged',
       value: stats?.flaggedVideos || 0,
       icon: AlertTriangle,
-      color: 'bg-red-500',
+      color: '#ef4444',
+      bgColor: '#fee2e2',
       link: '/videos?sensitivity=flagged'
     }
   ]
 
+  const quickActions = [
+    {
+      title: 'Upload New Video',
+      description: 'Add a new video to your library',
+      icon: Upload,
+      link: '/upload',
+      color: '#3b82f6'
+    },
+    {
+      title: 'View All Videos',
+      description: 'Browse your video collection',
+      icon: Film,
+      link: '/videos',
+      color: '#3b82f6'
+    }
+  ]
+
+  if (loading) {
+    return (
+      <Box sx={{ width: '100%', mt: 2 }}>
+        <LinearProgress />
+      </Box>
+    )
+  }
+
   return (
-    <div className="space-y-6">
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Welcome back! Here's an overview of your video content.</p>
-      </div>
+      <Box sx={{ mb: 6 }}>
+        <Typography
+          variant="h4"
+          component="h1"
+          sx={{
+            fontWeight: 700,
+            color: '#1e293b',
+            mb: 1
+          }}
+        >
+          Dashboard
+        </Typography>
+        <Typography
+          variant="body1"
+          sx={{ color: '#64748b' }}
+        >
+          Welcome back! Here's an overview of your video content.
+        </Typography>
+      </Box>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <Grid container spacing={3} sx={{ mb: 6 }}>
         {statCards.map((stat, index) => {
           const Icon = stat.icon
           return (
-            <Link
-              key={index}
-              to={stat.link}
-              className="card p-6 hover:shadow-lg transition-shadow cursor-pointer"
-            >
-              <div className="flex items-center">
-                <div className={`p-3 rounded-lg ${stat.color} bg-opacity-10`}>
-                  <Icon className={`w-6 h-6 ${stat.color.replace('bg-', 'text-')}`} />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                </div>
-              </div>
-            </Link>
+            <Grid item xs={12} sm={6} lg={3} key={index}>
+              <Link
+                to={stat.link}
+                style={{ textDecoration: 'none' }}
+              >
+                <Card
+                  sx={{
+                    height: '100%',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)'
+                    }
+                  }}
+                >
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Avatar
+                        sx={{
+                          bgcolor: stat.bgColor,
+                          color: stat.color,
+                          mr: 2,
+                          width: 56,
+                          height: 56
+                        }}
+                      >
+                        <Icon size={28} />
+                      </Avatar>
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: '#64748b', fontWeight: 500 }}
+                        >
+                          {stat.title}
+                        </Typography>
+                        <Typography
+                          variant="h4"
+                          sx={{ fontWeight: 700, color: '#1e293b' }}
+                        >
+                          {stat.value}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Link>
+            </Grid>
           )
         })}
-      </div>
+      </Grid>
 
       {/* Quick Actions */}
-      <div className="card p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Link
-            to="/upload"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <Upload className="w-8 h-8 text-primary-600 mr-4" />
-            <div>
-              <h3 className="font-medium text-gray-900">Upload New Video</h3>
-              <p className="text-sm text-gray-600">Add a new video to your library</p>
-            </div>
-          </Link>
-          
-          <Link
-            to="/videos"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <Film className="w-8 h-8 text-primary-600 mr-4" />
-            <div>
-              <h3 className="font-medium text-gray-900">View All Videos</h3>
-              <p className="text-sm text-gray-600">Browse your video collection</p>
-            </div>
-          </Link>
-        </div>
-      </div>
+      <Paper sx={{ p: 4, mb: 6, borderRadius: 3 }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 600, color: '#1e293b', mb: 3 }}
+        >
+          Quick Actions
+        </Typography>
+        <Grid container spacing={3}>
+          {quickActions.map((action, index) => {
+            const Icon = action.icon
+            return (
+              <Grid item xs={12} sm={6} key={index}>
+                <Link
+                  to={action.link}
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Paper
+                    sx={{
+                      p: 3,
+                      border: '1px solid #e2e8f0',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease-in-out',
+                      '&:hover': {
+                        bgcolor: '#f8fafc',
+                        borderColor: action.color
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Avatar
+                        sx={{
+                          bgcolor: '#f1f5f9',
+                          color: action.color,
+                          mr: 3,
+                          width: 48,
+                          height: 48
+                        }}
+                      >
+                        <Icon size={24} />
+                      </Avatar>
+                      <Box>
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: 600, color: '#1e293b', mb: 0.5 }}
+                        >
+                          {action.title}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: '#64748b' }}
+                        >
+                          {action.description}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Paper>
+                </Link>
+              </Grid>
+            )
+          })}
+        </Grid>
+      </Paper>
 
-      {/* Recent Activity */}
-      <div className="card p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">System Overview</h2>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center">
-              <TrendingUp className="w-5 h-5 text-green-600 mr-3" />
-              <span className="text-sm font-medium text-gray-900">System Status</span>
-            </div>
-            <span className="text-sm text-green-600 font-medium">Operational</span>
-          </div>
+      {/* System Overview */}
+      <Paper sx={{ p: 4, borderRadius: 3 }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 600, color: '#1e293b', mb: 3 }}
+        >
+          System Overview
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              p: 3,
+              bgcolor: '#f8fafc',
+              borderRadius: 2
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Avatar
+                sx={{
+                  bgcolor: '#dcfce7',
+                  color: '#22c55e',
+                  mr: 2,
+                  width: 40,
+                  height: 40
+                }}
+              >
+                <TrendingUp size={20} />
+              </Avatar>
+              <Typography
+                variant="body1"
+                sx={{ fontWeight: 500, color: '#1e293b' }}
+              >
+                System Status
+              </Typography>
+            </Box>
+            <Chip
+              label="Operational"
+              size="small"
+              sx={{
+                bgcolor: '#dcfce7',
+                color: '#22c55e',
+                fontWeight: 600
+              }}
+            />
+          </Box>
           
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center">
-              <Film className="w-5 h-5 text-blue-600 mr-3" />
-              <span className="text-sm font-medium text-gray-900">Storage Used</span>
-            </div>
-            <span className="text-sm text-blue-600 font-medium">
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              p: 3,
+              bgcolor: '#f8fafc',
+              borderRadius: 2
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Avatar
+                sx={{
+                  bgcolor: '#dbeafe',
+                  color: '#3b82f6',
+                  mr: 2,
+                  width: 40,
+                  height: 40
+                }}
+              >
+                <Film size={20} />
+              </Avatar>
+              <Typography
+                variant="body1"
+                sx={{ fontWeight: 500, color: '#1e293b' }}
+              >
+                Storage Used
+              </Typography>
+            </Box>
+            <Typography
+              variant="body2"
+              sx={{ color: '#3b82f6', fontWeight: 600 }}
+            >
               {stats?.totalVideos || 0} videos
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
+            </Typography>
+          </Box>
+        </Box>
+      </Paper>
+    </Container>
   )
 }

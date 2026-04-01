@@ -1,21 +1,42 @@
 import React from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useRedux'
+import { useUI } from '../hooks/useRedux'
 import { 
   Home, 
   Video, 
   Upload, 
-  LogOut, 
   Menu, 
   X,
-  User
 } from 'lucide-react'
+import {
+  Box,
+  Drawer,
+  AppBar,
+  Toolbar,
+  Typography,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Avatar,
+  IconButton,
+  Paper,
+  Divider,
+  useTheme,
+  useMediaQuery
+} from '@mui/material'
+
+const drawerWidth = 280
 
 export const Layout = () => {
   const { user, logout } = useAuth()
+  const { sidebarOpen, toggleSidebar, setSidebarOpen } = useUI()
   const location = useLocation()
   const navigate = useNavigate()
-  const [sidebarOpen, setSidebarOpen] = React.useState(false)
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'))
 
   const handleLogout = () => {
     logout()
@@ -34,102 +55,217 @@ export const Layout = () => {
     return location.pathname === href
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+  const drawerContent = (
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Header */}
+      <Box sx={{ p: 3, borderBottom: '1px solid #e2e8f0' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b' }}>
+            Video App
+          </Typography>
+          {isMobile && (
+            <IconButton onClick={() => setSidebarOpen(false)} sx={{ color: '#64748b' }}>
+              <X size={20} />
+            </IconButton>
+          )}
+        </Box>
+      </Box>
 
-      {/* Sidebar */}
-      <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-900">Video App</h1>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden"
-          >
-            <X className="w-6 h-6 text-gray-500" />
-          </button>
-        </div>
-
-        <nav className="mt-8 px-4">
-          <div className="space-y-2">
-            {navigation.map((item) => {
-              const Icon = item.icon
-              return (
-                <Link
-                  key={item.name}
+      {/* Navigation */}
+      <Box sx={{ flex: 1, py: 2 }}>
+        <List sx={{ px: 2 }}>
+          {navigation.map((item) => {
+            const Icon = item.icon
+            return (
+              <ListItem key={item.name} disablePadding sx={{ mb: 1 }}>
+                <ListItemButton
+                  component={Link}
                   to={item.href}
-                  className={`
-                    flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors
-                    ${isActive(item.href)
-                      ? 'bg-primary-100 text-primary-700'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  onClick={() => isMobile && setSidebarOpen(false)}
+                  sx={{
+                    borderRadius: 2,
+                    py: 1.5,
+                    px: 2,
+                    backgroundColor: isActive(item.href) ? '#f1f5f9' : 'transparent',
+                    color: isActive(item.href) ? '#3b82f6' : '#64748b',
+                    '&:hover': {
+                      backgroundColor: isActive(item.href) ? '#f1f5f9' : '#f8fafc',
+                      color: '#1e293b'
+                    },
+                    '& .MuiListItemIcon-root': {
+                      color: isActive(item.href) ? '#3b82f6' : '#64748b'
                     }
-                  `}
-                  onClick={() => setSidebarOpen(false)}
+                  }}
                 >
-                  <Icon className="w-5 h-5 mr-3" />
-                  {item.name}
-                </Link>
-              )
-            })}
-          </div>
-        </nav>
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <Icon size={20} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={item.name}
+                    primaryTypographyProps={{
+                      fontSize: '0.875rem',
+                      fontWeight: isActive(item.href) ? 600 : 500
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            )
+          })}
+        </List>
+      </Box>
 
-        {/* User info and logout */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
-          <div className="flex items-center mb-4">
-            <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-              <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center w-full px-4 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+      {/* User Info */}
+      <Box sx={{ p: 3, borderTop: '1px solid #e2e8f0' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Avatar
+            sx={{
+              bgcolor: '#3b82f6',
+              width: 40,
+              height: 40,
+              mr: 2
+            }}
           >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </button>
-        </div>
-      </div>
+          Person
+          </Avatar>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
+              {user?.name}
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#64748b', textTransform: 'capitalize' }}>
+              {user?.role}
+            </Typography>
+          </Box>
+        </Box>
+        
+        <ListItemButton
+          onClick={handleLogout}
+          sx={{
+            borderRadius: 2,
+            py: 1,
+            px: 2,
+            color: '#ef4444',
+            '&:hover': {
+              backgroundColor: '#fee2e2'
+            },
+            '& .MuiListItemIcon-root': {
+              color: '#ef4444'
+            }
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 40 }}>
+           Logout
+          </ListItemIcon>
+          <ListItemText 
+            primary="Logout"
+            primaryTypographyProps={{
+              fontSize: '0.875rem',
+              fontWeight: 500
+            }}
+          />
+        </ListItemButton>
+      </Box>
+    </Box>
+  )
 
-      {/* Main content */}
-      <div className="lg:ml-64">
-        {/* Top bar */}
-        <div className="sticky top-0 z-10 bg-white shadow-sm border-b border-gray-200">
-          <div className="flex items-center justify-between h-16 px-4 lg:px-8">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden"
+  return (
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f8fafc' }}>
+      {/* Mobile Drawer */}
+      <Drawer
+        variant="temporary"
+        open={isMobile && sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        ModalProps={{
+          keepMounted: true
+        }}
+        sx={{
+          display: { xs: 'block', lg: 'none' },
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: drawerWidth,
+            borderRight: '1px solid #e2e8f0'
+          }
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+
+      {/* Desktop Drawer */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: 'none', lg: 'block' },
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: drawerWidth,
+            borderRight: '1px solid #e2e8f0',
+            position: 'relative'
+          }
+        }}
+        open
+      >
+        {drawerContent}
+      </Drawer>
+
+      {/* Main Content */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          width: { lg: `calc(100% - ${drawerWidth}px)` },
+          minWidth: 0
+        }}
+      >
+        {/* Top Bar */}
+        <AppBar
+          position="sticky"
+          sx={{
+            bgcolor: '#ffffff',
+            color: '#1e293b',
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+            borderBottom: '1px solid #e2e8f0'
+          }}
+        >
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={toggleSidebar}
+              sx={{ mr: 2, display: { lg: 'none' } }}
             >
-              <Menu className="w-6 h-6 text-gray-500" />
-            </button>
+              <Menu size={24} />
+            </IconButton>
             
-            <div className="flex-1 lg:hidden">
-              <h1 className="text-lg font-semibold text-gray-900">
-                {navigation.find(item => isActive(item.href))?.name || 'Video App'}
-              </h1>
-            </div>
-          </div>
-        </div>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1, display: { xs: 'block', lg: 'none' } }}>
+              {navigation.find(item => isActive(item.href))?.name || 'Video App'}
+            </Typography>
 
-        {/* Page content */}
-        <main className="p-4 lg:p-8">
+            {/* Mobile User Menu */}
+            {isMobile && (
+              <Avatar
+                sx={{
+                  bgcolor: '#3b82f6',
+                  width: 32,
+                  height: 32
+                }}
+              >
+               Person
+              </Avatar>
+            )}
+          </Toolbar>
+        </AppBar>
+
+        {/* Page Content */}
+        <Toolbar /> {/* Spacer for fixed AppBar */}
+        <Box
+          sx={{
+            p: { xs: 2, sm: 3 },
+            minHeight: 'calc(100vh - 64px)' // Subtract AppBar height
+          }}
+        >
           <Outlet />
-        </main>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   )
 }
