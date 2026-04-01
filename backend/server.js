@@ -42,7 +42,7 @@ app.use(helmet({
       scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "blob:"],
       mediaSrc: ["'self'", "blob:"],
-      connectSrc: ["'self'", "http://localhost:3000", "http://localhost:5000",  "https://video-streaming-app-pi-three.vercel.app"],
+      connectSrc: ["'self'", "http://localhost:3000", "http://localhost:5000",  "https://video-streaming-app-pi-three.vercel.app", "https://video-streaming-app-ud5i.onrender.com"],
     },
   },
 }));
