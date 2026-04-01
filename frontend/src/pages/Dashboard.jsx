@@ -26,6 +26,7 @@ import {
 
 export const Dashboard = () => {
   const { stats, loading, getDashboardStats } = useVideos()
+console.log("stats----------", stats);
 
   useEffect(() => {
     getDashboardStats()
@@ -34,7 +35,7 @@ export const Dashboard = () => {
   const statCards = [
     {
       title: 'Total Videos',
-      value: stats?.totalVideos || 0,
+      value: stats?.data?.totalVideos || 0,
       icon: Video,
       color: '#3b82f6',
       bgColor: '#dbeafe',
@@ -42,7 +43,7 @@ export const Dashboard = () => {
     },
     {
       title: 'Processing',
-      value: stats?.processingVideos || 0,
+      value: stats?.data?.processingVideos || 0,
       icon: Clock,
       color: '#f59e0b',
       bgColor: '#fef3c7',
@@ -50,7 +51,7 @@ export const Dashboard = () => {
     },
     {
       title: 'Completed',
-      value: stats?.completedVideos || 0,
+      value: stats?.data?.completedVideos || 0,
       icon: CheckCircle,
       color: '#22c55e',
       bgColor: '#dcfce7',
@@ -58,7 +59,7 @@ export const Dashboard = () => {
     },
     {
       title: 'Flagged',
-      value: stats?.flaggedVideos || 0,
+      value: stats?.data?.flaggedVideos || 0,
       icon: AlertTriangle,
       color: '#ef4444',
       bgColor: '#fee2e2',

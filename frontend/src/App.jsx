@@ -27,9 +27,10 @@ function App() {
 
       setLoading('global', true)
       try {
-        // Token exists, let the auth slice handle validation
-        // Just wait a moment for the auth slice to initialize
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Token exists, validate it with backend
+        const { validateToken } = require('./store/slices/authSlice').default
+        const result = await dispatch(validateToken())
+        console.log('Token validation result:', result)
       } catch (error) {
         console.error('Auth initialization failed:', error);
       } finally {
