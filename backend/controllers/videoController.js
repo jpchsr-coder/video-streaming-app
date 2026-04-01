@@ -188,16 +188,14 @@ const streamVideo = async (req, res) => {
       });
     }
 
-    // Set CORS headers for video streaming
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-
     const videoPath = video.filePath;
     
+    // Check if file exists
     if (!fs.existsSync(videoPath)) {
+      console.error('Video file not found:', videoPath);
       return res.status(404).json({
         success: false,
-        message: 'Video file not found'
+        message: 'Video file not found on server'
       });
     }
 
@@ -205,6 +203,10 @@ const streamVideo = async (req, res) => {
     const fileSize = stat.size;
     const range = req.headers.range;
 
+    // Set proper headers for video streaming
+    res.setHeader('Content-Type', 'video/mp4');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    
     if (range) {
       // Handle range requests for streaming
       const parts = range.replace(/bytes=/, "").split("-");

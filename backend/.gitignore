@@ -71,11 +71,8 @@ jspm_packages/
 # TernJS port file
 .tern-port
 
-# Uploads directory - keep structure but ignore contents
-uploads/videos/*
-uploads/thumbnails/*
-!uploads/videos/.gitkeep
-!uploads/thumbnails/.gitkeep
+
+
 
 # OS generated files
 .DS_Store

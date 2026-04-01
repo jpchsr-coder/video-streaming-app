@@ -77,7 +77,14 @@ app.use((req, res, next) => {
 });
 
 // Static files for uploads
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static('uploads', {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.mp4') || path.endsWith('.mov') || path.endsWith('.avi')) {
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.setHeader('Content-Type', 'video/mp4');
+    }
+  }
+}));
 
 // Routes
 app.use('/api/auth', authRoutes);
